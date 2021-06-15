@@ -89,7 +89,8 @@ async def run(args):
 
             writer.write(b'\n')
 
-        print('')
+        if args.canonical:
+            print('')
     else:
         raise NotImplementedError('Unsupported parameters')
 
@@ -97,7 +98,7 @@ async def run(args):
 def main():
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tty', type=str, required=True,
+    parser.add_argument('--tty', type=str, default=None,
             help="the serial interface to connect via")
     parser.add_argument('--baud', type=int, default=115200,
             help="the baud rate of the connection")
@@ -112,6 +113,11 @@ def main():
                     sixteen space-separated, two column, hexadecimal bytes""")
 
     args = parser.parse_args()
+    args.tty = args.tty or os.environ.get('PROGROCK_TTY', None)
+
+    if not args.tty:
+        raise EnvironmentError('missing requred argument --tty ' +
+                'or environment var PROGROCK_TTY')
 
     loop = get_event_loop()
     loop.run_until_complete(run(args))
